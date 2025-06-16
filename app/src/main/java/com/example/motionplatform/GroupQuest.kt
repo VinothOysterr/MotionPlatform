@@ -14,10 +14,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -69,16 +72,7 @@ fun GroupQuest(onBack: () -> Unit) {
                         containerColor = Color(0xFF131313),
                         titleContentColor = Color.White,
                         actionIconContentColor = Color.White
-                    ),
-                    actions = {
-                        IconButton(onClick = { /* Handle action */ }) {
-                            Icon(
-                                imageVector = Icons.Outlined.Edit,
-                                contentDescription = "Edit",
-                                tint = Color.White
-                            )
-                        }
-                    }
+                    )
                 )
             }
         ) { innerPadding ->
@@ -106,7 +100,10 @@ fun GroupQuest(onBack: () -> Unit) {
                             .padding(10.dp)
                             .fillMaxWidth()
                             .clickable { expandable = !expandable }
-                            .animateContentSize()
+                            .animateContentSize(),
+                        elevation = CardDefaults.cardElevation(
+                            defaultElevation = 10.dp
+                        )
                     ) {
                         Column(
                             modifier = Modifier
@@ -130,6 +127,9 @@ fun GroupQuest(onBack: () -> Unit) {
                                 ) {
                                     for (j in start..end) {
                                         val checked = checkStates[j] != false
+                                        var drpDwn by remember { mutableStateOf(false) }
+                                        var drpDwnTxt by remember { mutableStateOf("$j") }
+
                                         Column(
                                             horizontalAlignment = Alignment.CenterHorizontally,
                                             verticalArrangement = Arrangement.Center
@@ -139,9 +139,38 @@ fun GroupQuest(onBack: () -> Unit) {
                                                 onCheckedChange = { isChecked ->
                                                     checkStates[j] = isChecked
                                                     checkboxPrefs.saveCheckboxState(j, isChecked)
-                                                }
+                                                },
+                                                colors = CheckboxDefaults.colors(
+                                                    checkedColor = Color(0xFFE3FF7A), // Background color when checked
+                                                    uncheckedColor = Color(0xFFB0BEC5), // Background color when unchecked
+                                                    checkmarkColor = Color.White, // Color of the checkmark
+                                                    disabledCheckedColor = Color.Gray, // Background color when checked and disabled
+                                                    disabledUncheckedColor = Color.LightGray // Background color when unchecked and disabled
+                                                )
                                             )
-                                            Text(text = "$j")
+                                            Box(
+                                                modifier = Modifier
+                                                    .padding(vertical = 4.dp)
+                                                    .clickable {
+                                                        drpDwn = !drpDwn
+                                                    }
+                                            ) {
+                                                Text(text = drpDwnTxt)
+                                            }
+                                            DropdownMenu(
+                                                expanded = drpDwn,
+                                                onDismissRequest = { drpDwn = false }
+                                            ) {
+                                                for (k in 1..25) {
+                                                    DropdownMenuItem(
+                                                        text = { Text("$k") },
+                                                        onClick = {
+                                                            drpDwnTxt = "$k"
+                                                            drpDwn = false
+                                                        }
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 }

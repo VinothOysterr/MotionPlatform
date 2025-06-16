@@ -125,7 +125,8 @@ class MainActivity : ComponentActivity() {
                             },
                             onNavigateToPair = {
                                 triggerHapticFeedback()
-                                navController.navigate("scan_network")
+//                                navController.navigate("scan_network")
+                                navController.navigate("group_quest")
                             }
                         )
                     }
@@ -136,6 +137,14 @@ class MainActivity : ComponentActivity() {
                                 navController.popBackStack()
                             },
                             onScan = { triggerHapticFeedback() }
+                        )
+                    }
+                    composable ("group_quest") {
+                        GroupQuest(
+                            onBack = {
+                                triggerHapticFeedback()
+                                navController.popBackStack()
+                            }
                         )
                     }
                 }

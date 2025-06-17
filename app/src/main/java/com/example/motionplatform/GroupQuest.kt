@@ -14,13 +14,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,6 +45,9 @@ import androidx.compose.ui.unit.dp
 fun GroupQuest(onBack: () -> Unit) {
     val context = LocalContext.current
     val checkboxPrefs = remember { CheckboxPrefHelper(context) }
+
+    val showNames = remember { mutableListOf("Mission to Mars", "International Space Station", "Roller Coaster Adventure", "Journey to Moon") }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -95,81 +98,110 @@ fun GroupQuest(onBack: () -> Unit) {
                         }
                     }
 
-                    Card(
+                    val textToShow = if (i >= showNames.size) {
+                        showNames[i % showNames.size]
+                    } else {
+                        showNames[i]
+                    }
+
+                    ElevatedCard(
                         modifier = Modifier
                             .padding(10.dp)
                             .fillMaxWidth()
                             .clickable { expandable = !expandable }
                             .animateContentSize(),
                         elevation = CardDefaults.cardElevation(
-                            defaultElevation = 10.dp
+                            defaultElevation = 8.dp
+                        ),
+                        colors = CardDefaults.elevatedCardColors(
+                            containerColor = Color.Transparent, // Background color of the card
+                            contentColor = Color.White // Color for content (e.g., text) inside the card
                         )
                     ) {
-                        Column(
+                        Box(
                             modifier = Modifier
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color(0xFF00BCD4),
+                                            Color(0xFF3F51B5)
+                                        ) // Purple to blue
+                                    )
+                                ) // Apply gradient here
+                                .fillMaxWidth()
                                 .padding(16.dp)
-                                .fillMaxWidth(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(text = "Video $i")
+                            Column(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxWidth(),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = textToShow,
+                                )
 
-                            if (expandable) {
-                                val start = (i - 1) * 5 + 1
-                                val end = i * 5
+                                if (expandable) {
+                                    val start = (i - 1) * 5 + 1
+                                    val end = i * 5
 
-                                Row(
-                                    modifier = Modifier
-                                        .padding(vertical = 4.dp)
-                                        .fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceEvenly
-                                ) {
-                                    for (j in start..end) {
-                                        val checked = checkStates[j] != false
-                                        var drpDwn by remember { mutableStateOf(false) }
-                                        var drpDwnTxt by remember { mutableStateOf("$j") }
+                                    Row(
+                                        modifier = Modifier
+                                            .padding(vertical = 4.dp)
+                                            .fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceEvenly
+                                    ) {
+                                        for (j in start..end) {
+                                            val checked = checkStates[j] != false
+                                            var drpDwn by remember { mutableStateOf(false) }
+                                            var drpDwnTxt by remember { mutableStateOf("$j") }
 
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            verticalArrangement = Arrangement.Center
-                                        ) {
-                                            Checkbox(
-                                                checked = checked,
-                                                onCheckedChange = { isChecked ->
-                                                    checkStates[j] = isChecked
-                                                    checkboxPrefs.saveCheckboxState(j, isChecked)
-                                                },
-                                                colors = CheckboxDefaults.colors(
-                                                    checkedColor = Color(0xFFE3FF7A), // Background color when checked
-                                                    uncheckedColor = Color(0xFFB0BEC5), // Background color when unchecked
-                                                    checkmarkColor = Color.White, // Color of the checkmark
-                                                    disabledCheckedColor = Color.Gray, // Background color when checked and disabled
-                                                    disabledUncheckedColor = Color.LightGray // Background color when unchecked and disabled
-                                                )
-                                            )
-                                            Box(
-                                                modifier = Modifier
-                                                    .padding(vertical = 4.dp)
-                                                    .clickable {
-                                                        drpDwn = !drpDwn
-                                                    }
+                                            Column(
+                                                horizontalAlignment = Alignment.CenterHorizontally,
+                                                verticalArrangement = Arrangement.Center
                                             ) {
-                                                Text(text = drpDwnTxt)
-                                            }
-                                            DropdownMenu(
-                                                expanded = drpDwn,
-                                                onDismissRequest = { drpDwn = false }
-                                            ) {
-                                                for (k in 1..25) {
-                                                    DropdownMenuItem(
-                                                        text = { Text("$k") },
-                                                        onClick = {
-                                                            drpDwnTxt = "$k"
-                                                            drpDwn = false
-                                                        }
+                                                Checkbox(
+                                                    checked = checked,
+                                                    onCheckedChange = { isChecked ->
+                                                        checkStates[j] = isChecked
+                                                        checkboxPrefs.saveCheckboxState(
+                                                            j,
+                                                            isChecked
+                                                        )
+                                                    },
+                                                    colors = CheckboxDefaults.colors(
+                                                        checkedColor = Color(0xFFE3FF7A), // Background color when checked
+                                                        uncheckedColor = Color(0xFFB0BEC5), // Background color when unchecked
+                                                        checkmarkColor = Color.White, // Color of the checkmark
+                                                        disabledCheckedColor = Color.Gray, // Background color when checked and disabled
+                                                        disabledUncheckedColor = Color.LightGray // Background color when unchecked and disabled
                                                     )
+                                                )
+                                                Box(
+                                                    modifier = Modifier
+                                                        .padding(vertical = 4.dp)
+                                                        .clickable {
+                                                            drpDwn = !drpDwn
+                                                        }
+                                                ) {
+                                                    Text(text = drpDwnTxt)
                                                 }
+//                                                DropdownMenu(
+//                                                    expanded = drpDwn,
+//                                                    onDismissRequest = { drpDwn = false }
+//                                                ) {
+//                                                    for (k in 1..25) {
+//                                                        DropdownMenuItem(
+//                                                            text = { Text("$k") },
+//                                                            onClick = {
+//                                                                drpDwnTxt = "$k"
+//                                                                drpDwn = false
+//                                                            }
+//                                                        )
+//                                                    }
+//                                                }
                                             }
                                         }
                                     }

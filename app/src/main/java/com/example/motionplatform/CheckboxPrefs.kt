@@ -2,13 +2,14 @@ package com.example.motionplatform
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 
 class CheckboxPrefHelper(context: Context) {
     private val prefs: SharedPreferences =
         context.getSharedPreferences("checkbox_states", Context.MODE_PRIVATE)
 
     fun saveCheckboxState(id: Int, state: Boolean) {
-        prefs.edit().putBoolean(id.toString(), state).apply()
+        prefs.edit { putBoolean(id.toString(), state) }
     }
 
     fun getCheckboxState(id: Int): Boolean {

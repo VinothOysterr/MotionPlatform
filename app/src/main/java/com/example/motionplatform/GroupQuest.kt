@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
@@ -28,11 +29,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -45,8 +49,36 @@ import androidx.compose.ui.unit.dp
 fun GroupQuest(onBack: () -> Unit) {
     val context = LocalContext.current
     val checkboxPrefs = remember { CheckboxPrefHelper(context) }
+    val listPrefHelper = remember { ListPrefHelper(context) }
 
-    val showNames = remember { mutableListOf("Mission to Mars", "International Space Station", "Roller Coaster Adventure", "Journey to Moon") }
+    val PREF_KEY = "show_names_list"
+
+    val showNames = remember {
+        mutableStateListOf<String>().apply {
+            val saved = listPrefHelper.getStringList(PREF_KEY)
+            if (saved.isEmpty()) {
+                addAll(
+                    listOf(
+                        "Mission to Mars",
+                        "International Space Station",
+                        "Roller Coaster Adventure",
+                        "Journey to Moon"
+                    )
+                )
+            } else {
+                addAll(saved)
+            }
+        }
+    }
+
+    var isDialogOpen by remember { mutableStateOf(false) }
+
+    // Automatically save when the list changes
+    LaunchedEffect(showNames) {
+        snapshotFlow { showNames.toList() }.collect {
+            listPrefHelper.saveStringList(PREF_KEY, it)
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -75,7 +107,16 @@ fun GroupQuest(onBack: () -> Unit) {
                         containerColor = Color(0xFF131313),
                         titleContentColor = Color.White,
                         actionIconContentColor = Color.White
-                    )
+                    ),
+                    actions = {
+                        IconButton(onClick = { isDialogOpen = true }) {
+                            Icon(
+                                imageVector = Icons.Default.EditNote,
+                                contentDescription = "Edit",
+                                tint = Color.White
+                            )
+                        }
+                    }
                 )
             }
         ) { innerPadding ->
@@ -98,10 +139,10 @@ fun GroupQuest(onBack: () -> Unit) {
                         }
                     }
 
-                    val textToShow = if (i >= showNames.size) {
-                        showNames[i % showNames.size]
+                    val textToShow = if (i > showNames.size) {
+                        showNames[(i - 1) % showNames.size]
                     } else {
-                        showNames[i]
+                        showNames[i - 1]
                     }
 
                     ElevatedCard(
@@ -155,8 +196,6 @@ fun GroupQuest(onBack: () -> Unit) {
                                     ) {
                                         for (j in start..end) {
                                             val checked = checkStates[j] != false
-                                            var drpDwn by remember { mutableStateOf(false) }
-                                            var drpDwnTxt by remember { mutableStateOf("$j") }
 
                                             Column(
                                                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -182,26 +221,9 @@ fun GroupQuest(onBack: () -> Unit) {
                                                 Box(
                                                     modifier = Modifier
                                                         .padding(vertical = 4.dp)
-                                                        .clickable {
-                                                            drpDwn = !drpDwn
-                                                        }
                                                 ) {
-                                                    Text(text = drpDwnTxt)
+                                                    Text(text ="$j")
                                                 }
-//                                                DropdownMenu(
-//                                                    expanded = drpDwn,
-//                                                    onDismissRequest = { drpDwn = false }
-//                                                ) {
-//                                                    for (k in 1..25) {
-//                                                        DropdownMenuItem(
-//                                                            text = { Text("$k") },
-//                                                            onClick = {
-//                                                                drpDwnTxt = "$k"
-//                                                                drpDwn = false
-//                                                            }
-//                                                        )
-//                                                    }
-//                                                }
                                             }
                                         }
                                     }
@@ -212,5 +234,16 @@ fun GroupQuest(onBack: () -> Unit) {
                 }
             }
         }
+    }
+    if (isDialogOpen) {
+        EditNamesDialog(
+            currentNames = showNames,
+            onCancel = { isDialogOpen = false },
+            onSave = { editedNames ->
+                showNames.clear()
+                showNames.addAll(editedNames)
+                isDialogOpen = false
+            }
+        )
     }
 }

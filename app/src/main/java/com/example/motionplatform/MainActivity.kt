@@ -118,7 +118,7 @@ class MainActivity : ComponentActivity() {
 
                                     sendSerialCommand(serialCommand)
 //                                    sendTCPSerialCommand(serialCommand)
-                                    sendTCPCommand(tcpCommand)
+                                    sendTCPCommand(tcpCommand, this@MainActivity)
                                 } catch (e: Exception) {
                                     Log.e("onSendCommand", "Invalid JSON format: $command", e)
                                 }
@@ -227,9 +227,41 @@ class MainActivity : ComponentActivity() {
         return savedIpsString?.split(",")?.filter { it.isNotEmpty() } ?: emptyList()
     }
 
-    private fun sendTCPCommand(command: String) {
+    private fun sendTCPCommand(command: String, context: Context) {
         Log.d("TCP Command", command)
 //        val ipList = readPrefIp(this)
+
+        // Get the checkbox states from preferences
+        val checkboxPrefs = CheckboxPrefHelper(context)
+        val checkedIds = checkboxPrefs.getAllStates().filter { it.value }.keys
+
+        // Generate IPs based on checked IDs (e.g., ID 2 becomes 192.168.0.102)
+        val createdIPList = checkedIds.map { id ->
+            "192.168.0.${100 + id}" // Assuming IDs are 1-99, this gives 192.168.0.101-199
+        }
+
+        if (createdIPList.isEmpty()) {
+            Log.e("TCP", "No IP addresses found (no checkboxes checked)")
+            return
+        }
+
+        Log.d("TCP", "Sending to IPs: $createdIPList")
+
+//        CoroutineScope(Dispatchers.IO).launch {
+//            createdIPList.forEach { ip ->
+//                try {
+//                    val port = 8080
+//                    Socket(ip, port).use { socket ->
+//                        val writer = PrintWriter(socket.getOutputStream(), true)
+//                        writer.println(command)
+//                        Log.d("TCP", "Sent command '$command' to $ip:$port")
+//                    }
+//                } catch (e: Exception) {
+//                    Log.e("TCP", "Error sending command to $ip: ${e.message}")
+//                }
+//            }
+//        }
+
         val ipList = listOf("192.168.0.111")
         if (ipList.isEmpty()) {
             Log.e("TCP", "No IP addresses found")
@@ -251,6 +283,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
     private fun sendTCPSerialCommand(command: String) {
         val ipAdd = "192.168.0.117"
 

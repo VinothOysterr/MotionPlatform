@@ -25,7 +25,7 @@ fun EditNamesDialog(
                     OutlinedTextField(
                         value = nameState.value,
                         onValueChange = { newValue -> nameState.value = newValue },
-                        label = { Text("Name ${index + 1}") },
+                        label = { Text("Video ${index + 1}") },
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
